@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 13% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 13%;
+
+    /* Emergency red - primary action color */
+    --primary: 0 84% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Trust blue - secondary/info */
+    --secondary: 217 91% 60%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 13% 95%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Warning amber */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Destructive/urgent */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Success green */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 0 84% 42%;
+
+    --radius: 0.75rem;
+
+    /* Emergency gradient */
+    --gradient-emergency: linear-gradient(135deg, hsl(0 84% 42%), hsl(0 84% 52%));
+    
+    /* Safe gradient */
+    --gradient-safe: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
+    
+    /* Alert gradient */
+    --gradient-alert: linear-gradient(135deg, hsl(38 92% 50%), hsl(38 92% 60%));
+
+    /* Shadows */
+    --shadow-emergency: 0 10px 30px -10px hsl(0 84% 42% / 0.3);
+    --shadow-safe: 0 10px 30px -10px hsl(142 76% 36% / 0.2);
+    
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 13% 9%;
+    --foreground: 0 0% 98%;
+
+    --card: 220 13% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 220 13% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 84% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 217 91% 65%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 13% 17%;
+    --muted-foreground: 220 9% 65%;
+
+    --accent: 38 92% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 76% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 220 13% 17%;
+    --input: 220 13% 17%;
+    --ring: 0 84% 52%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
