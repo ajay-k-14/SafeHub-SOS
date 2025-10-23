@@ -13,7 +13,6 @@ BEGIN
   SELECT full_name INTO reporter_name
   FROM public.profiles
   WHERE id = NEW.user_id;
-
   -- Call the edge function asynchronously using pg_net
   PERFORM net.http_post(
     url := supabase_url || '/functions/v1/notify-responders',
