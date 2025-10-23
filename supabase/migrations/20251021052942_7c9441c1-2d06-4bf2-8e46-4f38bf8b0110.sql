@@ -16,7 +16,7 @@ BEGIN
   WHERE id = NEW.user_id;
 
   -- Call the edge function asynchronously using pg_net
-  PERFORM extensions.net.http_post(
+  PERFORM net.http_post(
     url := supabase_url || '/functions/v1/notify-responders',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
@@ -35,3 +35,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- Enable pg_net extension if not already enabled
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;

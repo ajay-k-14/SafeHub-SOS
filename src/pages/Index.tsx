@@ -234,7 +234,7 @@ const Index = () => {
             Community Safety & Emergency Response Hub
           </p>
           <p className="text-xs mt-2">
-            © 2024 SafeHub. Building safer communities together.
+            © 2025 SafeHub. Building safer communities together. All rights reserved.
           </p>
         </div>
       </footer>
