@@ -1,8 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { Resend } from "https://esm.sh/resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,18 +15,54 @@ interface EmergencyNotification {
   reporter_name?: string;
 }
 
+interface ResendClient {
+  emails: {
+    send(payload: { from: string; to: string[]; subject: string; html: string }): Promise<unknown>;
+  };
+}
+
+const validateEnv = () => {
+  const url = Deno.env.get("SUPABASE_URL");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+
+  const missing: string[] = [];
+  if (!url) missing.push("SUPABASE_URL");
+  if (!key) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+  if (!resendKey) missing.push("RESEND_API_KEY");
+
+  return { url, key, resendKey, missing };
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const { url, key, resendKey, missing } = validateEnv();
+    if (missing.length > 0) {
+      console.error("Missing env vars:", missing);
+      return new Response(
+        JSON.stringify({ error: `Missing env vars: ${missing.join(", ")}` }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
-    const { emergency_id, emergency_type, latitude, longitude, description, reporter_name }: EmergencyNotification = await req.json();
+    const supabaseClient: SupabaseClient = createClient(url!, key!);
+
+    // Import Resend dynamically so missing key won't crash module load
+  let resend: ResendClient | null = null;
+    try {
+      const mod = await import("https://esm.sh/resend@2.0.0");
+      resend = new mod.Resend(resendKey);
+    } catch (e) {
+      console.warn("Resend import/init failed:", e);
+      // Continue; we'll error if we attempt to send emails
+    }
+
+    const payload: EmergencyNotification = await req.json();
+    const { emergency_id, emergency_type, latitude, longitude, description, reporter_name } = payload;
 
     console.log("Processing emergency notification:", emergency_id);
 
@@ -53,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Get email addresses for these users
-    const userIds = responderRoles.map(r => r.user_id);
+  const userIds = (responderRoles as Array<Record<string, unknown>>).map((r) => (r as any).user_id);
     const { data: authUsers, error: authError } = await supabaseClient.auth.admin.listUsers();
 
     if (authError) {
@@ -61,10 +94,10 @@ const handler = async (req: Request): Promise<Response> => {
       throw authError;
     }
 
-    const responderEmails = authUsers.users
-      .filter(user => userIds.includes(user.id))
-      .map(user => user.email)
-      .filter(email => email);
+    const responderEmails = (authUsers.users || [])
+      .filter((user: unknown) => userIds.includes((user as any).id))
+      .map((user: unknown) => (user as any).email)
+      .filter(Boolean) as string[];
 
     if (responderEmails.length === 0) {
       console.log("No responder emails found");
@@ -79,11 +112,19 @@ const handler = async (req: Request): Promise<Response> => {
     const emergencyTypeDisplay = emergency_type.replace('_', ' ').toUpperCase();
     const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
+    if (!resend) {
+      console.error("Resend client not initialized; emails will not be sent");
+      return new Response(
+        JSON.stringify({ error: 'Email provider not configured' }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     // Send emails to all responders
-    const emailPromises = responderEmails.map(email =>
+    const emailPromises = responderEmails.map((email: string) =>
       resend.emails.send({
         from: "Emergency Alert <onboarding@resend.dev>",
-        to: [email!],
+        to: [email],
         subject: `🚨 NEW EMERGENCY: ${emergencyTypeDisplay}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -119,8 +160,8 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const results = await Promise.allSettled(emailPromises);
-    const successful = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+  const successful = results.filter((r: unknown) => (r as any).status === 'fulfilled').length;
+  const failed = results.filter((r: unknown) => (r as any).status === 'rejected').length;
 
     console.log(`Emails sent: ${successful} successful, ${failed} failed`);
 
@@ -136,10 +177,10 @@ const handler = async (req: Request): Promise<Response> => {
         headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in notify-responders function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: (error as any)?.message || String(error) }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

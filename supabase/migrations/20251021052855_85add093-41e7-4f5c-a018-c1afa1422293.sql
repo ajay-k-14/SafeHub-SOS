@@ -6,8 +6,7 @@ SECURITY DEFINER
 AS $$
 DECLARE
   reporter_name text;
-  supabase_url text := 'https://yzbmqgmaltyuzkblcxlc.supabase.co';
-  service_role_key text := 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6Ym1xZ21hbHR5dXprYmxjeGxjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MDk1NzUwMywiZXhwIjoyMDc2NTMzNTAzfQ.EaD1LYBh6lnmfF5iNPqiWwqtvfN2oAC8DqFgYTvPLVk';
+  supabase_url text := 'https://ezmigqojzpjscpvcazsk.supabase.co';
 BEGIN
   -- Get reporter's name from profiles
   SELECT full_name INTO reporter_name
@@ -17,8 +16,7 @@ BEGIN
   PERFORM net.http_post(
     url := supabase_url || '/functions/v1/notify-responders',
     headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || service_role_key
+      'Content-Type', 'application/json'
     ),
     body := jsonb_build_object(
       'emergency_id', NEW.id,
@@ -42,5 +40,7 @@ CREATE TRIGGER on_emergency_report_created
   FOR EACH ROW
   EXECUTE FUNCTION notify_responders_on_emergency();
 
--- Enable pg_net extension if not already enabled
+-- Ensure extensions schema exists then enable pg_net extension
+CREATE SCHEMA IF NOT EXISTS extensions;
 CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS http WITH SCHEMA public;

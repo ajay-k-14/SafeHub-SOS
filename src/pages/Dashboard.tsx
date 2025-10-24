@@ -196,7 +196,7 @@ const Dashboard = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Emergency Contacts</h1>
+              <h1 className="text-4xl font-bold mb-2"><br /><br />Emergency Contacts</h1>
               <p className="text-muted-foreground">
                 Manage your emergency contacts. They'll be notified when you send an SOS alert.
               </p>
