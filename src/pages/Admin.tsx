@@ -348,6 +348,7 @@ const Admin = () => {
           </Card>
         </div>
       </main>
+      
 
       {/* Contacts Dialog */}
       <Dialog open={showContactsDialog} onOpenChange={setShowContactsDialog}>
